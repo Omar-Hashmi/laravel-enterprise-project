@@ -7,3 +7,146 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+:root {
+    color-scheme: light;
+    --ink: #142321;
+    --muted: #647572;
+    --line: #dce6e1;
+    --canvas: #f3f7f4;
+    --paper: #ffffff;
+    --mint: #c8f3dc;
+    --mint-strong: #1d9a65;
+    --coral: #f47c6b;
+    --sun: #f5c96b;
+    --sky: #b9e7ed;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: 'Instrument Sans', ui-sans-serif, sans-serif;
+    overflow-x: hidden;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid #8ad6b1;
+    outline-offset: 2px;
+}
+
+.app-shell {
+    background-image: linear-gradient(rgba(20, 35, 33, 0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(20, 35, 33, 0.025) 1px, transparent 1px);
+    background-size: 32px 32px;
+}
+
+.sidebar-link {
+    color: #8fa09b;
+    transition: color 160ms ease, background-color 160ms ease, transform 160ms ease;
+}
+
+.sidebar-link:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateX(2px);
+}
+
+.sidebar-link.is-active {
+    color: #12211f;
+    background: var(--mint);
+}
+
+.view-panel {
+    animation: rise-in 360ms ease both;
+    min-width: 0;
+}
+
+.view-panel .grid,
+.view-panel .grid > * {
+    min-width: 0;
+}
+
+.stagger > * {
+    animation: rise-in 420ms ease both;
+}
+
+.stagger > :nth-child(2) { animation-delay: 60ms; }
+.stagger > :nth-child(3) { animation-delay: 120ms; }
+.stagger > :nth-child(4) { animation-delay: 180ms; }
+
+.modal-backdrop {
+    background: rgba(11, 25, 23, 0.52);
+    backdrop-filter: blur(8px);
+}
+
+@keyframes rise-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+body.theme-dark {
+    background: #0d1917;
+    color: #e4f0ea;
+}
+
+.theme-dark [class~="bg-white"],
+.theme-dark [class*="bg-[#f3f7f4]"],
+.theme-dark [class*="bg-[#f8fbf9]"] {
+    background-color: #172a26 !important;
+}
+
+.theme-dark [class*="border-[#dce6e1]"],
+.theme-dark [class*="border-[#cddbd5]"],
+.theme-dark [class*="border-[#edf2ef]"] {
+    border-color: #2b4640 !important;
+}
+
+.theme-dark [class*="text-[#142321]"],
+.theme-dark [class*="text-[#30443f]"] {
+    color: #e4f0ea !important;
+}
+
+.theme-dark [class*="text-[#71817c]"],
+.theme-dark [class*="text-[#8a9994]"],
+.theme-dark [class*="text-[#91a09b]"],
+.theme-dark [class*="text-[#84938e]"] {
+    color: #9db2aa !important;
+}
+
+.theme-dark input,
+.theme-dark select,
+.theme-dark textarea {
+    background-color: #172a26 !important;
+    border-color: #2b4640 !important;
+    color: #e4f0ea !important;
+}
+
+.theme-dark input::placeholder,
+.theme-dark textarea::placeholder {
+    color: #718b81;
+}
+
+.theme-dark .app-shell {
+    background-image: linear-gradient(rgba(211, 239, 225, 0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(211, 239, 225, 0.035) 1px, transparent 1px);
+}

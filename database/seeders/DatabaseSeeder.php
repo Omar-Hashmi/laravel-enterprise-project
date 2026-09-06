@@ -15,11 +15,28 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $this->call(RoleAndPermissionSeeder::class);
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        $user = User::firstOrCreate(
+            ['email' => 'test@example.com'],
+            ['name' => 'Test User', 'password' => 'password', 'email_verified_at' => now()],
+        );
+        $user->assignRole('Super Admin');
+
+        $demoUsers = [
+            ['name' => 'Avery Cole', 'email' => 'demo-admin@flowline.test', 'role' => 'Super Admin'],
+            ['name' => 'Morgan Lee', 'email' => 'demo-department@flowline.test', 'role' => 'Department Admin'],
+            ['name' => 'Casey Morgan', 'email' => 'demo-manager@flowline.test', 'role' => 'Manager'],
+            ['name' => 'Jordan Reed', 'email' => 'demo-employee@flowline.test', 'role' => 'Employee'],
+            ['name' => 'Riley Shah', 'email' => 'demo-auditor@flowline.test', 'role' => 'Auditor'],
+        ];
+
+        foreach ($demoUsers as $demoUser) {
+            $account = User::updateOrCreate(
+                ['email' => $demoUser['email']],
+                ['name' => $demoUser['name'], 'password' => 'password'],
+            );
+            $account->syncRoles([$demoUser['role']]);
+        }
     }
 }
