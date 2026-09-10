@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FormController;
+use App\Http\Controllers\Web\AdminDashboardViewController;
+use App\Http\Controllers\Web\TaskViewController;
+use App\Http\Controllers\Web\WorkflowAnalyticsViewController;
 use App\Http\Controllers\WorkflowController;
 use App\Http\Controllers\WorkflowInstanceController;
 use Illuminate\Support\Facades\Route;
@@ -33,4 +36,13 @@ Route::middleware('auth')->group(function (): void {
     Route::put('forms/{form}', [FormController::class, 'update'])->name('forms.update');
     Route::delete('forms/{form}', [FormController::class, 'destroy'])->name('forms.destroy');
     Route::post('forms/{form}/submissions', [FormController::class, 'submit'])->name('forms.submissions.store');
+
+    // Developer 2: Task Operations Web Routes
+    Route::get('/tasks', [TaskViewController::class, 'index'])->name('tasks.index');
+    Route::post('/tasks/{task:uuid}/complete', [TaskViewController::class, 'complete'])->name('tasks.complete');
+    Route::post('/tasks/{task:uuid}/delegate', [TaskViewController::class, 'delegate'])->name('tasks.delegate');
+
+    // Developer 2: Executive Dashboard & Analytics Web Routes
+    Route::get('/admin/dashboard', [AdminDashboardViewController::class, 'index'])->name('admin.dashboard');
+    Route::get('/analytics', [WorkflowAnalyticsViewController::class, 'index'])->name('analytics.index');
 });

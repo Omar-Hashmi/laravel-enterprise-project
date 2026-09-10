@@ -14,3 +14,4 @@ Artisan::command('inspire', function () {
 Schedule::job(new ProcessWorkflowEscalations)->everyFiveMinutes()->withoutOverlapping();
 Schedule::job(new ProcessWorkflowSlaMonitoring)->everyFiveMinutes()->withoutOverlapping();
 Schedule::job(new ProcessWorkflowAutoActions)->everyMinute()->withoutOverlapping();
+Schedule::command('tasks:check-sla')->everyFiveMinutes()->withoutOverlapping();

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Events\FormSubmitted;
 use Database\Factories\FormSubmissionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -17,6 +18,13 @@ class FormSubmission extends Model
     protected function casts(): array
     {
         return ['data' => 'array', 'submitted_at' => 'datetime'];
+    }
+
+    protected static function booted(): void
+    {
+        static::created(function (FormSubmission $submission): void {
+            FormSubmitted::dispatch($submission);
+        });
     }
 
     public function form(): BelongsTo

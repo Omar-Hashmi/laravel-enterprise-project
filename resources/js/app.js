@@ -201,14 +201,83 @@ function setupRegistrationRole() {
 	if (!form || !password || form.querySelector('[name="role"]')) return;
 	const role = document.createElement('label');
 	role.className = 'block';
-	role.innerHTML = '<span class="text-sm font-semibold text-[#30443f]">Starting role</span><select name="role" required class="mt-2 w-full rounded-xl border border-[#dce6e1] bg-white px-3.5 py-3 text-sm text-[#142321] outline-none transition focus:border-[#55bb84] focus:ring-4 focus:ring-[#c8f3dc]"><option value="Employee" selected>Employee</option><option>Manager</option><option>Department Admin</option><option>Super Admin</option><option>Auditor</option><option>Task Coordinator</option><option>Notification Manager</option><option>Analytics Viewer</option><option>Dashboard Viewer</option></select><span class="mt-2 block text-xs text-[#91a09b]">Only Employee registration is active. Elevated and Developer 2 roles are reserved for administrator assignment.</span>';
+	role.innerHTML = '<span class="text-sm font-semibold text-[#30443f]">Starting role</span><select name="role" required class="mt-2 w-full rounded-xl border border-[#dce6e1] bg-white px-3.5 py-3 text-sm text-[#142321] outline-none transition focus:border-[#55bb84] focus:ring-4 focus:ring-[#c8f3dc]"><option value="Employee" selected>Employee (Default)</option><option disabled value="Manager">Manager (Pre-configured / Admin Assigned)</option><option disabled value="Department Admin">Department Admin (Pre-configured / Admin Assigned)</option><option disabled value="Super Admin">Super Admin (Pre-configured / Admin Assigned)</option><option disabled value="Auditor">Auditor (Pre-configured / Admin Assigned)</option></select><span class="mt-2 block text-xs text-[#91a09b]">Public signups are restricted to Employee. To access Admin or Manager portals, please sign in with existing credentials.</span>';
 	password.parentElement?.before(role);
+}
+
+function setupNotifications() {
+	const bellBtn = $('#notification-bell-btn');
+	const sidebarBellBtn = $('#sidebar-bell-btn');
+	const dropdown = $('#notification-dropdown');
+	const markAllBtn = $('#mark-all-read-btn');
+
+	const toggleDropdown = (event) => {
+		event.preventDefault();
+		event.stopPropagation();
+		dropdown?.classList.toggle('hidden');
+	};
+
+	bellBtn?.addEventListener('click', toggleDropdown);
+	sidebarBellBtn?.addEventListener('click', toggleDropdown);
+
+	document.addEventListener('click', (event) => {
+		if (dropdown && !dropdown.contains(event.target) && !bellBtn?.contains(event.target) && !sidebarBellBtn?.contains(event.target)) {
+			dropdown.classList.add('hidden');
+		}
+	});
+
+	markAllBtn?.addEventListener('click', async () => {
+		try {
+			const csrf = $('meta[name="csrf-token"]')?.getAttribute('content');
+			const res = await fetch('/api/v1/notifications/read-all', {
+				method: 'POST',
+				headers: {
+					Accept: 'application/json',
+					'X-CSRF-TOKEN': csrf,
+					'X-Requested-With': 'XMLHttpRequest',
+				},
+			});
+			if (res.ok) {
+				$('#header-unread-badge')?.classList.add('hidden');
+				$('#sidebar-unread-badge')?.classList.add('hidden');
+				$$('#notification-items-list > div').forEach((el) => el.classList.add('opacity-60'));
+				toast('All notifications marked as read', 'success');
+			}
+		} catch {}
+	});
+
+	// Live unread badge count refresh
+	async function refreshUnreadCount() {
+		try {
+			const res = await fetch('/api/v1/notifications/unread-count', {
+				headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+			});
+			if (res.ok) {
+				const data = await res.json();
+				const count = data.unread_count ?? 0;
+				const headerBadge = $('#header-unread-badge');
+				const sidebarBadge = $('#sidebar-unread-badge');
+				if (headerBadge) {
+					headerBadge.textContent = count;
+					headerBadge.classList.toggle('hidden', count === 0);
+				}
+				if (sidebarBadge) {
+					sidebarBadge.textContent = count;
+					sidebarBadge.classList.toggle('hidden', count === 0);
+				}
+			}
+		} catch {}
+	}
+
+	refreshUnreadCount();
+	setInterval(refreshUnreadCount, 30000);
 }
 
 function bindApp() {
 	setupTheme();
 	setupRoleDetection();
 	setupRegistrationRole();
+	setupNotifications();
 	applyAccessGates();
 	$$('[data-view]').forEach((link) => link.addEventListener('click', () => setView(link.dataset.view)));
 	$('[data-new-workflow]')?.addEventListener('click', openNewWorkflow);
@@ -216,14 +285,25 @@ function bindApp() {
 	$('[data-close-modal]')?.addEventListener('click', closeModal);
 	$('#modal')?.addEventListener('click', (event) => { if (event.target.id === 'modal') closeModal(); });
 	$('#mobile-menu')?.addEventListener('click', () => {
-		$('#sidebar').classList.toggle('-translate-x-full');
-		$('#sidebar-scrim').classList.toggle('hidden');
+		$('#sidebar')?.classList.toggle('-translate-x-full');
+		$('#sidebar-scrim')?.classList.toggle('hidden');
 	});
-	$('#mobile-close')?.addEventListener('click', () => { $('#sidebar').classList.add('-translate-x-full'); $('#sidebar-scrim').classList.add('hidden'); });
-	$('#sidebar-scrim')?.addEventListener('click', () => { $('#sidebar').classList.add('-translate-x-full'); $('#sidebar-scrim').classList.add('hidden'); });
+	$('#mobile-close')?.addEventListener('click', () => { $('#sidebar')?.classList.add('-translate-x-full'); $('#sidebar-scrim')?.classList.add('hidden'); });
+	$('#sidebar-scrim')?.addEventListener('click', () => { $('#sidebar')?.classList.add('-translate-x-full'); $('#sidebar-scrim')?.classList.add('hidden'); });
 	$('#search')?.addEventListener('input', (event) => { const query = event.target.value.toLowerCase(); renderWorkflowCards(state.workflows.filter((item) => `${item.title} ${item.owner} ${item.status}`.toLowerCase().includes(query))); });
 	renderWorkflowCards();
 	renderApprovals();
+
+	// Check URL query parameters for initial view or modal actions
+	const urlParams = new URLSearchParams(window.location.search);
+	const initialView = urlParams.get('view');
+	if (initialView && ['overview', 'workflows', 'forms', 'approvals', 'audit'].includes(initialView)) {
+		setView(initialView);
+	}
+	if (urlParams.get('action') === 'submit') {
+		openSubmission();
+	}
 }
 
 document.addEventListener('DOMContentLoaded', bindApp);
+

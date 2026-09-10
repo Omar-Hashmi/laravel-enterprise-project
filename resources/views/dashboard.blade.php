@@ -10,49 +10,11 @@
 </head>
 <body data-theme="light">
     <div class="app-shell min-h-screen lg:flex">
-        <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 flex w-[272px] -translate-x-full flex-col bg-[#142321] px-5 py-6 text-white transition-transform duration-300 lg:static lg:translate-x-0">
-            <div class="flex items-center justify-between px-2">
-                <a href="{{ route('home') }}" class="flex items-center gap-3">
-                    <span class="grid h-10 w-10 place-items-center rounded-[14px] bg-[#c8f3dc] text-[#142321] shadow-[0_0_0_5px_rgba(200,243,220,0.12)]">
-                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3v5a3 3 0 0 0 3 3h6a3 3 0 0 1 3 3v7"/><path d="M18 3v5a3 3 0 0 1-3 3H9a3 3 0 0 0-3 3v7"/><circle cx="6" cy="3" r="2"/><circle cx="18" cy="3" r="2"/><circle cx="6" cy="21" r="2"/><circle cx="18" cy="21" r="2"/></svg>
-                    </span>
-                    <span><span class="block text-[17px] font-semibold tracking-[-0.03em]">Flowline</span><span class="block text-[10px] uppercase tracking-[0.2em] text-[#8fa09b]">Operations OS</span></span>
-                </a>
-                <button id="mobile-close" class="rounded-lg p-2 text-[#8fa09b] hover:bg-white/10 lg:hidden" title="Close navigation"><span class="text-xl">x</span></button>
-            </div>
-
-            <div class="mt-10 rounded-2xl border border-white/10 bg-white/[0.055] p-3">
-                <div class="flex items-center gap-3"><span class="grid h-9 w-9 place-items-center rounded-xl bg-[#f5c96b] text-sm font-bold text-[#473718]">AC</span><div class="min-w-0"><p class="truncate text-sm font-semibold">Acme Corporation</p><p class="truncate text-xs text-[#8fa09b]">Operations workspace</p></div><button class="ml-auto text-[#8fa09b]" title="Switch workspace">...</button></div>
-            </div>
-
-            <nav class="mt-9 flex-1" aria-label="Main navigation">
-                <p class="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#687b75]">Workspace</p>
-                <div class="space-y-1">
-                    <button class="sidebar-link is-active flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium" data-view="overview"> <span class="grid h-7 w-7 place-items-center rounded-lg bg-white/10">{{-- icon rendered with CSS fallback --}}<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>Overview</button>
-                    <button class="sidebar-link flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium" data-view="workflows"><span class="grid h-7 w-7 place-items-center rounded-lg bg-white/10"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3v5a3 3 0 0 0 3 3h6a3 3 0 0 1 3 3v7"/><path d="M18 3v5a3 3 0 0 1-3 3H9a3 3 0 0 0-3 3v7"/><circle cx="6" cy="3" r="2"/><circle cx="18" cy="3" r="2"/><circle cx="6" cy="21" r="2"/><circle cx="18" cy="21" r="2"/></svg></span>Workflows<span class="ml-auto rounded-full bg-white/10 px-2 py-0.5 text-[10px]">12</span></button>
-                    <button class="sidebar-link flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium" data-view="forms"><span class="grid h-7 w-7 place-items-center rounded-lg bg-white/10"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg></span>Dynamic forms</button>
-                    @canany(['workflow.approve', 'workflow.manage'])
-                        <button class="sidebar-link flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium" data-view="approvals"><span class="grid h-7 w-7 place-items-center rounded-lg bg-white/10"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m5 12 4 4L19 6"/><circle cx="12" cy="12" r="9"/></svg></span>My approvals<span id="approval-count" class="ml-auto rounded-full bg-[#f47c6b] px-2 py-0.5 text-[10px] font-bold text-[#351714]">3</span></button>
-                    @endcanany
-                    @can('audit.view')
-                        <button class="sidebar-link flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium" data-view="audit"><span class="grid h-7 w-7 place-items-center rounded-lg bg-white/10"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>Audit trail</button>
-                    @endcan
-                </div>
-                <p class="mb-3 mt-9 px-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#687b75]">Manage</p>
-                @can('form.submit')
-                    <div class="space-y-1"><button class="sidebar-link flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium" data-submit-request><span class="grid h-7 w-7 place-items-center rounded-lg bg-white/10"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg></span>Submit a request</button></div>
-                @endcan
-            </nav>
-
-            <div class="border-t border-white/10 pt-4"><div class="flex items-center gap-3 rounded-xl px-2 py-2"><span class="grid h-9 w-9 place-items-center rounded-full bg-[#b9e7ed] text-xs font-bold text-[#28565d]">{{ str(auth()->user()->name)->substr(0, 2)->upper() }}</span><div class="min-w-0 flex-1"><p class="truncate text-sm font-semibold">{{ auth()->user()->name }}</p><p class="truncate text-xs text-[#8fa09b]">{{ auth()->user()->getRoleNames()->first() }}</p></div><form method="POST" action="{{ route('logout') }}">@csrf<button class="rounded-lg p-2 text-[#8fa09b] hover:bg-white/10" title="Sign out"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 17l5-5-5-5M15 12H3M21 19V5a2 2 0 0 0-2-2h-5"/></svg></button></form></div></div>
-        </aside>
+        @include('partials.sidebar')
 
         <div id="sidebar-scrim" class="fixed inset-0 z-30 hidden bg-[#142321]/40 lg:hidden"></div>
         <main class="min-w-0 flex-1">
-            <header class="flex h-[76px] items-center justify-between border-b border-[#dce6e1] bg-[#f8fbf9]/90 px-5 backdrop-blur md:px-8">
-                <div class="flex items-center gap-3"><button id="mobile-menu" class="rounded-xl border border-[#dce6e1] bg-white p-2.5 text-[#526560] lg:hidden" title="Open navigation"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><div><p class="text-xs font-medium text-[#84938e]">Monday, September 7, 2026</p><h1 id="page-title" class="mt-0.5 text-lg font-semibold tracking-[-0.03em] text-[#142321]">Overview</h1></div></div>
-                <div class="flex items-center gap-3"><label class="hidden items-center gap-2 rounded-xl border border-[#dce6e1] bg-white px-3 py-2 text-sm text-[#91a09b] md:flex"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="search" class="w-36 bg-transparent text-sm text-[#30443f] outline-none placeholder:text-[#91a09b]" placeholder="Search workflows" /></label><button id="theme-toggle" class="rounded-xl border border-[#dce6e1] bg-white p-2.5 text-[#526560] hover:bg-[#f1f6f3]" title="Toggle theme"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"/></svg></button><button class="relative rounded-xl border border-[#dce6e1] bg-white p-2.5 text-[#526560] hover:bg-[#f1f6f3]" title="Notifications"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span class="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-[#f47c6b]"></span></button><span class="grid h-9 w-9 place-items-center rounded-full bg-[#142321] text-xs font-bold text-[#c8f3dc]">{{ str(auth()->user()->name)->substr(0, 2)->upper() }}</span></div>
-            </header>
+            @include('partials.header', ['title' => 'Overview'])
 
             <div class="mx-auto max-w-[1500px] p-5 md:p-8">
                 <section id="overview-view" class="view-panel">
