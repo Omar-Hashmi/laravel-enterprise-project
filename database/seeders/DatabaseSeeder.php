@@ -29,6 +29,10 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Casey Morgan', 'email' => 'demo-manager@flowline.test', 'role' => 'Manager'],
             ['name' => 'Jordan Reed', 'email' => 'demo-employee@flowline.test', 'role' => 'Employee'],
             ['name' => 'Riley Shah', 'email' => 'demo-auditor@flowline.test', 'role' => 'Auditor'],
+            ['name' => 'Taylor Brooks', 'email' => 'demo-tasks@flowline.test', 'role' => 'Task Coordinator'],
+            ['name' => 'Alex Rivera', 'email' => 'demo-notifications@flowline.test', 'role' => 'Notification Manager'],
+            ['name' => 'Sam Patel', 'email' => 'demo-analytics@flowline.test', 'role' => 'Analytics Viewer'],
+            ['name' => 'Jamie Chen', 'email' => 'demo-dashboard@flowline.test', 'role' => 'Dashboard Viewer'],
         ];
 
         foreach ($demoUsers as $demoUser) {

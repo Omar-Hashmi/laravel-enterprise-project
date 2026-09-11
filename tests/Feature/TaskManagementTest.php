@@ -23,6 +23,7 @@ class TaskManagementTest extends TestCase
     public function test_user_can_create_task_via_api(): void
     {
         $user = User::factory()->create();
+        $user->assignRole('Task Coordinator');
         $token = $user->createToken('test-token')->plainTextToken;
 
         $response = $this->withToken($token)->postJson('/api/v1/tasks', [
@@ -48,6 +49,7 @@ class TaskManagementTest extends TestCase
     public function test_user_can_retrieve_assigned_tasks(): void
     {
         $user = User::factory()->create();
+        $user->assignRole('Task Coordinator');
         $otherUser = User::factory()->create();
         $token = $user->createToken('test-token')->plainTextToken;
 
@@ -74,6 +76,7 @@ class TaskManagementTest extends TestCase
     public function test_filtering_tasks_by_status(): void
     {
         $user = User::factory()->create();
+        $user->assignRole('Task Coordinator');
         $token = $user->createToken('test-token')->plainTextToken;
 
         $pendingTask = Task::factory()->create(['title' => 'Pending Task', 'status' => 'pending']);
@@ -135,6 +138,7 @@ class TaskManagementTest extends TestCase
     public function test_user_can_delegate_a_task(): void
     {
         $user = User::factory()->create();
+        $user->assignRole('Task Coordinator');
         $colleague = User::factory()->create();
         $token = $user->createToken('test-token')->plainTextToken;
 
@@ -163,6 +167,7 @@ class TaskManagementTest extends TestCase
     public function test_summary_metrics_endpoint(): void
     {
         $user = User::factory()->create();
+        $user->assignRole('Task Coordinator');
         $token = $user->createToken('test-token')->plainTextToken;
 
         // 2 assigned to user

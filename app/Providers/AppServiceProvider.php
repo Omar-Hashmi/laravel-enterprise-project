@@ -7,9 +7,11 @@ use App\Events\TaskOverdueEvent;
 use App\Listeners\SendTaskNotificationListener;
 use App\Listeners\WorkflowEventListener;
 use App\Models\Form;
+use App\Models\Task;
 use App\Models\Workflow;
 use App\Models\WorkflowInstance;
 use App\Policies\FormPolicy;
+use App\Policies\TaskPolicy;
 use App\Policies\WorkflowInstancePolicy;
 use App\Policies\WorkflowPolicy;
 use Illuminate\Support\Facades\Event;
@@ -34,6 +36,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Form::class, FormPolicy::class);
         Gate::policy(Workflow::class, WorkflowPolicy::class);
         Gate::policy(WorkflowInstance::class, WorkflowInstancePolicy::class);
+        Gate::policy(Task::class, TaskPolicy::class);
 
         Event::listen(TaskAssignedEvent::class, [SendTaskNotificationListener::class, 'handle']);
         Event::listen(TaskOverdueEvent::class, [SendTaskNotificationListener::class, 'handle']);

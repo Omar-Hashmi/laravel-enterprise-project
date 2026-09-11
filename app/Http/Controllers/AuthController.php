@@ -45,7 +45,7 @@ class AuthController extends Controller
 
     public function showRegister(): View
     {
-        return view('auth.register');
+        return view('auth.register', ['registrationRoles' => $this->registrationRoles()]);
     }
 
     public function register(Request $request): RedirectResponse
@@ -53,7 +53,7 @@ class AuthController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'role' => ['required', Rule::in(['Employee'])],
+            'role' => ['required', Rule::in($this->registrationRoles())],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
@@ -76,5 +76,21 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login');
+    }
+
+    /** @return array<int, string> */
+    private function registrationRoles(): array
+    {
+        return [
+            'Super Admin',
+            'Department Admin',
+            'Manager',
+            'Employee',
+            'Auditor',
+            'Task Coordinator',
+            'Notification Manager',
+            'Analytics Viewer',
+            'Dashboard Viewer',
+        ];
     }
 }

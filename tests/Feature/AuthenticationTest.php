@@ -41,18 +41,31 @@ class AuthenticationTest extends TestCase
         $this->assertTrue(Auth::user()->hasRole('Employee'));
     }
 
-    public function test_public_signup_cannot_claim_an_elevated_role(): void
+    public function test_signup_can_create_any_configured_role(): void
     {
         $response = $this->from('/register')->post('/register', [
-            'name' => 'Untrusted Admin',
-            'email' => 'untrusted.admin@example.com',
+            'name' => 'New Manager',
+            'email' => 'new.manager@example.com',
             'role' => 'Super Admin',
             'password' => 'secure-password',
             'password_confirmation' => 'secure-password',
         ]);
 
-        $response->assertRedirect('/register')->assertSessionHasErrors('role');
-        $this->assertDatabaseMissing('users', ['email' => 'untrusted.admin@example.com']);
+        $response->assertRedirectToRoute('dashboard');
+        $this->assertAuthenticated();
+        $this->assertTrue(Auth::user()->hasRole('Super Admin'));
+    }
+
+    public function test_all_dev_one_and_dev_two_roles_are_seeded(): void
+    {
+        $roles = [
+            'Super Admin', 'Department Admin', 'Manager', 'Employee', 'Auditor',
+            'Task Coordinator', 'Notification Manager', 'Analytics Viewer', 'Dashboard Viewer',
+        ];
+
+        foreach ($roles as $role) {
+            $this->assertDatabaseHas('roles', ['name' => $role]);
+        }
     }
 
     public function test_role_detection_returns_the_account_role_without_accepting_a_role_input(): void

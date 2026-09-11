@@ -21,6 +21,7 @@ class TaskController extends Controller
      */
     public function index(Request $request): AnonymousResourceCollection
     {
+        $this->authorize('viewAny', Task::class);
         $query = Task::query()->with(['user', 'creator', 'delegatedBy', 'delegatedTo']);
 
         // Filter: assigned_to_me
@@ -57,6 +58,7 @@ class TaskController extends Controller
      */
     public function summary(Request $request): JsonResponse
     {
+        $this->authorize('viewAny', Task::class);
         $user = $request->user();
 
         return response()->json([
@@ -73,6 +75,7 @@ class TaskController extends Controller
      */
     public function store(StoreTaskRequest $request): JsonResponse
     {
+        $this->authorize('create', Task::class);
         $validated = $request->validated();
         $validated['creator_id'] = $request->user()->id;
 
@@ -88,6 +91,8 @@ class TaskController extends Controller
      */
     public function show(Task $task): TaskResource
     {
+        $this->authorize('view', $task);
+
         return new TaskResource($task->load(['user', 'creator', 'delegatedBy', 'delegatedTo', 'workflowInstance', 'formSubmission']));
     }
 
@@ -96,6 +101,7 @@ class TaskController extends Controller
      */
     public function complete(Request $request, Task $task): TaskResource
     {
+        $this->authorize('complete', $task);
         $validated = $request->validate([
             'action_notes' => ['nullable', 'string', 'max:5000'],
         ]);
@@ -141,6 +147,7 @@ class TaskController extends Controller
      */
     public function delegate(Request $request, Task $task): TaskResource
     {
+        $this->authorize('delegate', $task);
         $validated = $request->validate([
             'target_user_id' => ['required', 'integer', 'exists:users,id'],
             'action_notes' => ['nullable', 'string', 'max:5000'],

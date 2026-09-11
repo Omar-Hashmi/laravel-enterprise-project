@@ -20,6 +20,7 @@ class TaskViewController extends Controller
      */
     public function index(Request $request): View
     {
+        $this->authorize('viewAny', Task::class);
         $user = $request->user();
         $query = Task::query()->with(['user', 'creator', 'delegatedBy', 'delegatedTo', 'workflowInstance']);
 
@@ -68,6 +69,7 @@ class TaskViewController extends Controller
      */
     public function complete(Request $request, Task $task): RedirectResponse
     {
+        $this->authorize('complete', $task);
         $validated = $request->validate([
             'action_notes' => ['nullable', 'string', 'max:5000'],
         ]);
@@ -113,6 +115,7 @@ class TaskViewController extends Controller
      */
     public function delegate(Request $request, Task $task): RedirectResponse
     {
+        $this->authorize('delegate', $task);
         $validated = $request->validate([
             'target_user_id' => ['required', 'integer', 'exists:users,id'],
             'action_notes' => ['nullable', 'string', 'max:5000'],

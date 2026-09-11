@@ -21,9 +21,13 @@ class RoleAndPermissionSeeder extends Seeder
             'Manager',
             'Employee',
             'Auditor',
+            'Task Coordinator',
+            'Notification Manager',
+            'Analytics Viewer',
+            'Dashboard Viewer',
         ];
 
-        $permissions = ['workflow.view', 'workflow.create', 'workflow.update', 'workflow.delete', 'workflow.start', 'workflow.manage', 'workflow.approve', 'form.manage', 'form.submit', 'audit.view'];
+        $permissions = ['workflow.view', 'workflow.create', 'workflow.update', 'workflow.delete', 'workflow.start', 'workflow.manage', 'workflow.approve', 'form.manage', 'form.submit', 'audit.view', 'task.view', 'task.manage', 'notification.view', 'notification.manage', 'analytics.view', 'dashboard.view'];
         foreach ($permissions as $permission) {
             Permission::firstOrCreate(['name' => $permission]);
         }
@@ -35,6 +39,10 @@ class RoleAndPermissionSeeder extends Seeder
                 'Manager' => ['workflow.view', 'workflow.start', 'workflow.approve', 'form.submit'],
                 'Employee' => ['workflow.view', 'workflow.start', 'form.submit'],
                 'Auditor' => ['workflow.view', 'audit.view'],
+                'Task Coordinator' => ['workflow.view', 'workflow.start', 'task.view', 'task.manage'],
+                'Notification Manager' => ['workflow.view', 'notification.view', 'notification.manage'],
+                'Analytics Viewer' => ['workflow.view', 'analytics.view'],
+                'Dashboard Viewer' => ['workflow.view', 'dashboard.view'],
             });
         }
     }

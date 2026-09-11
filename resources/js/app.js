@@ -108,6 +108,25 @@ function closeModal() {
 	document.body.classList.remove('overflow-hidden');
 }
 
+async function apiRequest(url, options = {}) {
+	const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
+	const response = await fetch(url, {
+		...options,
+		headers: {
+			Accept: 'application/json',
+			'Content-Type': 'application/json',
+			'X-CSRF-TOKEN': csrf,
+			'X-Requested-With': 'XMLHttpRequest',
+			...(options.headers ?? {}),
+		},
+	});
+	const body = await response.json().catch(() => null);
+	if (!response.ok) {
+		throw new Error(body?.message ?? Object.values(body?.errors ?? {}).flat()[0] ?? `Request failed (${response.status})`);
+	}
+	return body;
+}
+
 function openWorkflow(id) {
 	const workflow = state.workflows.find((item) => item.id === id);
 	if (!workflow) return;
@@ -118,20 +137,67 @@ function openWorkflow(id) {
 function openNewWorkflow() {
 	showModal(`<div class="flex items-start justify-between gap-6"><div><p class="text-xs font-semibold uppercase tracking-[0.14em] text-[#1d9a65]">Workflow builder</p><h2 class="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[#142321]">Create a workflow</h2><p class="mt-1 text-sm text-[#71817c]">Start with the process name and its first approval step.</p></div><button class="rounded-lg p-2 text-[#80908b] hover:bg-[#f1f6f3]" data-close-modal title="Close">${icon('x')}</button></div><form id="new-workflow-form" class="mt-8 space-y-5"><label class="block"><span class="text-sm font-semibold text-[#30443f]">Workflow name</span><input required name="title" placeholder="e.g. Equipment request" class="mt-2 w-full rounded-xl border border-[#dce6e1] bg-white px-3.5 py-3 text-sm outline-none transition focus:border-[#55bb84] focus:ring-4 focus:ring-[#c8f3dc]" /></label><label class="block"><span class="text-sm font-semibold text-[#30443f]">First step</span><input required name="step" placeholder="e.g. Department approval" class="mt-2 w-full rounded-xl border border-[#dce6e1] bg-white px-3.5 py-3 text-sm outline-none transition focus:border-[#55bb84] focus:ring-4 focus:ring-[#c8f3dc]" /></label><div class="flex justify-end gap-3 pt-3"><button type="button" class="rounded-lg px-4 py-2.5 text-sm font-semibold text-[#62736e] hover:bg-[#f1f6f3]" data-close-modal>Cancel</button><button class="rounded-lg bg-[#142321] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#24403a]" type="submit">Create workflow</button></div></form>`);
 	$$('[data-close-modal]').forEach((button) => button.addEventListener('click', closeModal));
-	$('#new-workflow-form').addEventListener('submit', (event) => { event.preventDefault(); const data = new FormData(event.currentTarget); state.workflows.unshift({ id: Date.now() % 10000, title: data.get('title'), owner: 'You', status: 'Draft', step: data.get('step'), amount: '—', age: 'Just now', tone: 'mint' }); closeModal(); renderWorkflowCards(); toast('Workflow draft created'); });
+	$('#new-workflow-form').addEventListener('submit', async (event) => {
+		event.preventDefault();
+		const data = new FormData(event.currentTarget);
+		try {
+			const workflow = await apiRequest('/workflows', { method: 'POST', body: JSON.stringify({ title: data.get('title'), status: 'draft', steps: [{ name: data.get('step'), type: 'sequential', step_order: 1, assignee_role: 'Manager' }] }) });
+			state.workflows.unshift({ id: workflow.data?.id ?? workflow.id, title: workflow.data?.title ?? workflow.title, owner: 'You', status: 'Draft', step: data.get('step'), amount: '—', age: 'Just now', tone: 'mint' });
+			closeModal();
+			renderWorkflowCards();
+			toast('Workflow draft created');
+		} catch (error) {
+			toast(error.message, 'error');
+		}
+	});
 }
 
-function openSubmission() {
-	showModal(`<div class="flex items-start justify-between gap-6"><div><p class="text-xs font-semibold uppercase tracking-[0.14em] text-[#1d9a65]">New request</p><h2 class="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[#142321]">Submit for approval</h2><p class="mt-1 text-sm text-[#71817c]">Choose a workflow and give reviewers the useful context.</p></div><button class="rounded-lg p-2 text-[#80908b] hover:bg-[#f1f6f3]" data-close-modal title="Close">${icon('x')}</button></div><form id="submission-form" class="mt-8 space-y-5"><label class="block"><span class="text-sm font-semibold text-[#30443f]">Workflow</span><select name="workflow" class="mt-2 w-full rounded-xl border border-[#dce6e1] bg-white px-3.5 py-3 text-sm outline-none focus:border-[#55bb84] focus:ring-4 focus:ring-[#c8f3dc]"><option>Purchase request</option><option>New contractor access</option><option>Travel reimbursement</option></select></label><label class="block"><span class="text-sm font-semibold text-[#30443f]">Request summary</span><textarea required name="summary" rows="4" placeholder="What does the reviewer need to know?" class="mt-2 w-full resize-none rounded-xl border border-[#dce6e1] bg-white px-3.5 py-3 text-sm outline-none focus:border-[#55bb84] focus:ring-4 focus:ring-[#c8f3dc]"></textarea></label><div class="flex justify-end gap-3 pt-3"><button type="button" class="rounded-lg px-4 py-2.5 text-sm font-semibold text-[#62736e] hover:bg-[#f1f6f3]" data-close-modal>Cancel</button><button class="rounded-lg bg-[#142321] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#24403a]" type="submit">Submit request</button></div></form>`);
+async function openSubmission() {
+	let forms = [];
+	try {
+		const workflows = await apiRequest('/workflows');
+		const entries = workflows.data ?? workflows;
+		for (const workflow of entries) {
+			const response = await apiRequest(`/workflows/${workflow.id}/forms`);
+			forms.push(...(response.data ?? response));
+		}
+	} catch (error) {
+		toast(error.message, 'error');
+		return;
+	}
+	if (!forms.length) {
+		toast('No workflow forms are available for submission yet.', 'error');
+		return;
+	}
+	showModal(`<div class="flex items-start justify-between gap-6"><div><p class="text-xs font-semibold uppercase tracking-[0.14em] text-[#1d9a65]">New request</p><h2 class="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[#142321]">Submit for approval</h2><p class="mt-1 text-sm text-[#71817c]">Submit data through the selected workflow form.</p></div><button class="rounded-lg p-2 text-[#80908b] hover:bg-[#f1f6f3]" data-close-modal title="Close">${icon('x')}</button></div><form id="submission-form" class="mt-8 space-y-5"><label class="block"><span class="text-sm font-semibold text-[#30443f]">Form</span><select name="form_id" class="mt-2 w-full rounded-xl border border-[#dce6e1] bg-white px-3.5 py-3 text-sm outline-none focus:border-[#55bb84] focus:ring-4 focus:ring-[#c8f3dc]">${forms.map((form) => `<option value="${form.id}">${form.title}</option>`).join('')}</select></label><label class="block"><span class="text-sm font-semibold text-[#30443f]">Request summary</span><textarea required name="summary" rows="4" placeholder="What does the reviewer need to know?" class="mt-2 w-full resize-none rounded-xl border border-[#dce6e1] bg-white px-3.5 py-3 text-sm outline-none focus:border-[#55bb84] focus:ring-4 focus:ring-[#c8f3dc]"></textarea></label><div class="flex justify-end gap-3 pt-3"><button type="button" class="rounded-lg px-4 py-2.5 text-sm font-semibold text-[#62736e] hover:bg-[#f1f6f3]" data-close-modal>Cancel</button><button class="rounded-lg bg-[#142321] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#24403a]" type="submit">Submit request</button></div></form>`);
 	$$('[data-close-modal]').forEach((button) => button.addEventListener('click', closeModal));
-	$('#submission-form').addEventListener('submit', (event) => { event.preventDefault(); closeModal(); toast('Request submitted to the next reviewer'); });
+	$('#submission-form').addEventListener('submit', async (event) => {
+		event.preventDefault();
+		const data = new FormData(event.currentTarget);
+		try {
+			await apiRequest(`/forms/${data.get('form_id')}/submissions`, { method: 'POST', body: JSON.stringify({ data: { summary: data.get('summary') } }) });
+			closeModal();
+			toast('Request submitted to the next reviewer');
+		} catch (error) {
+			toast(error.message, 'error');
+		}
+	});
 }
 
-function decideApproval(id, decision) {
+async function decideApproval(id, decision) {
 	const approval = state.approvals.find((item) => item.id === id);
-	state.approvals = state.approvals.filter((item) => item.id !== id);
-	renderApprovals();
-	toast(`${approval?.title ?? 'Request'} ${decision === 'approve' ? 'approved' : 'sent back'}`, decision === 'approve' ? 'success' : 'error');
+	if (!approval?.assignmentId) {
+		toast('This demo item is not linked to a live assignment.', 'error');
+		return;
+	}
+	try {
+		await apiRequest(`/workflow-assignments/${approval.assignmentId}/${decision}`, { method: 'POST', body: JSON.stringify({ comment: `${decision === 'approve' ? 'Approved' : 'Rejected'} from Flowline` }) });
+		state.approvals = state.approvals.filter((item) => item.id !== id);
+		renderApprovals();
+		toast(`${approval.title} ${decision === 'approve' ? 'approved' : 'sent back'}`);
+	} catch (error) {
+		toast(error.message, 'error');
+	}
 }
 
 function setView(view) {
@@ -201,7 +267,8 @@ function setupRegistrationRole() {
 	if (!form || !password || form.querySelector('[name="role"]')) return;
 	const role = document.createElement('label');
 	role.className = 'block';
-	role.innerHTML = '<span class="text-sm font-semibold text-[#30443f]">Starting role</span><select name="role" required class="mt-2 w-full rounded-xl border border-[#dce6e1] bg-white px-3.5 py-3 text-sm text-[#142321] outline-none transition focus:border-[#55bb84] focus:ring-4 focus:ring-[#c8f3dc]"><option value="Employee" selected>Employee (Default)</option><option disabled value="Manager">Manager (Pre-configured / Admin Assigned)</option><option disabled value="Department Admin">Department Admin (Pre-configured / Admin Assigned)</option><option disabled value="Super Admin">Super Admin (Pre-configured / Admin Assigned)</option><option disabled value="Auditor">Auditor (Pre-configured / Admin Assigned)</option></select><span class="mt-2 block text-xs text-[#91a09b]">Public signups are restricted to Employee. To access Admin or Manager portals, please sign in with existing credentials.</span>';
+	const roles = window.flowlineRegistrationRoles ?? ['Employee'];
+	role.innerHTML = `<span class="text-sm font-semibold text-[#30443f]">Starting role</span><select name="role" required class="mt-2 w-full rounded-xl border border-[#dce6e1] bg-white px-3.5 py-3 text-sm text-[#142321] outline-none transition focus:border-[#55bb84] focus:ring-4 focus:ring-[#c8f3dc]">${roles.map((item) => `<option value="${item}"${item === 'Employee' ? ' selected' : ''}>${item}</option>`).join('')}</select><span class="mt-2 block text-xs text-[#91a09b]">Choose the workspace role for this account. Permissions are enforced by the server.</span>`;
 	password.parentElement?.before(role);
 }
 

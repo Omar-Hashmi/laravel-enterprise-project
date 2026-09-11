@@ -41,6 +41,7 @@
     <!-- Navigation Groups -->
     <nav class="mt-6 flex-1 space-y-6" aria-label="Main navigation">
         <!-- 1. Workspace Core (Developer 1) -->
+        @canany(['task.view', 'task.manage', 'workflow.manage'])
         <div>
             <p class="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#687b75]">Workspace</p>
             <div class="space-y-1">
@@ -98,6 +99,7 @@
                 @endif
             </div>
         </div>
+        @endcanany
 
         <!-- 2. Task Operations (Developer 2) -->
         <div>
